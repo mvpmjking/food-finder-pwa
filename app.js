@@ -20,67 +20,24 @@ function getLocation() {
 
     if (!navigator.geolocation) {
         status.textContent = "Geolocation is not supported by your browser.";
-        logMessage("Geolocation not supported");
+        logMessage("❌ Geolocation not supported");
     } else {
         navigator.geolocation.getCurrentPosition(success, error);
     }
 }
 
 function success(position) {
-    userLatitude  = position.coords.latitude;
+    userLatitude = position.coords.latitude;
     userLongitude = position.coords.longitude;
     
     logMessage(`✅ Location found: Latitude ${userLatitude}, Longitude ${userLongitude}`);
-    document.getElementById("status").textContent = `📍 Location: ${userLatitude}, ${userLongitude}`;
+
+    // Display location on the screen
+    document.getElementById("status").innerHTML = `📍 Your Location: <b>${userLatitude}, ${userLongitude}</b>`;
     document.getElementById("preferences").style.display = "block";
 }
 
 function error(err) {
     logMessage(`❌ Error retrieving location: ${err.message}`);
-    document.getElementById("status").textContent = "❌ Unable to retrieve your location.";
-}
-
-// OpenStreetMap API - Now Showing Nearby Results
-async function searchRestaurants() {
-    logMessage("Searching for nearby restaurants...");
-    const foodType = document.getElementById("food").value;
-    const resultsList = document.getElementById("results");
-    resultsList.innerHTML = "Searching for restaurants...";
-
-    if (!userLatitude || !userLongitude) {
-        logMessage("❌ Error: Location not found before searching.");
-        resultsList.innerHTML = "❌ Error: Location not found.";
-        return;
-    }
-
-    const latMin = userLatitude - 0.05;
-    const latMax = userLatitude + 0.05;
-    const lonMin = userLongitude - 0.05;
-    const lonMax = userLongitude + 0.05;
-
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&bounded=1&viewbox=${lonMin},${latMin},${lonMax},${latMax}&limit=5`;
-
-    logMessage(`🌍 API Request URL: ${url}`);
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        logMessage("✅ Received response from OpenStreetMap API.");
-        resultsList.innerHTML = "";
-        if (data.length > 0) {
-            data.forEach(place => {  
-                let listItem = document.createElement("li");
-                listItem.textContent = `${place.display_name}`;
-                resultsList.appendChild(listItem);
-                logMessage(`📍 Found: ${place.display_name}`);
-            });
-        } else {
-            logMessage("❌ No restaurants found near your location.");
-            resultsList.innerHTML = "❌ No restaurants found near your location.";
-        }
-    })
-    .catch(error => {
-        logMessage(`❌ Error fetching restaurant data: ${error.message}`);
-        resultsList.innerHTML = "❌ Error fetching restaurant data.";
-    });
+    document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
