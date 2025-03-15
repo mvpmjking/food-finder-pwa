@@ -14,13 +14,13 @@ function logMessage(message) {
 }
 
 function getLocation() {
-    logMessage("Getting location...");
+    logMessage("📍 Getting location...");
     const status = document.getElementById("status");
     status.textContent = "Locating…";
 
     if (!navigator.geolocation) {
-        status.textContent = "Geolocation is not supported by your browser.";
-        logMessage("❌ Geolocation not supported");
+        status.textContent = "❌ Geolocation not supported by your browser.";
+        logMessage("❌ Geolocation not supported.");
     } else {
         navigator.geolocation.getCurrentPosition(success, error);
     }
@@ -42,12 +42,12 @@ function error(err) {
     document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
 
-// OpenStreetMap API - Now Using Proper Nearby Search
+// OpenStreetMap API - Now Logging Each Step
 async function searchRestaurants() {
     logMessage("🔍 Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
     const resultsList = document.getElementById("results");
-    resultsList.innerHTML = "Searching for restaurants...";
+    resultsList.innerHTML = "<p>⏳ Searching for restaurants...</p>";
 
     if (!userLatitude || !userLongitude) {
         logMessage("❌ Error: Location not found before searching.");
@@ -57,16 +57,20 @@ async function searchRestaurants() {
 
     // Search within a 5-mile radius (8000 meters)
     const radius = 8000;
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&dedupe=1&limit=5&extratags=1&countrycodes=us&lat=${userLatitude}&lon=${userLongitude}&radius=${radius}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&dedupe=1&limit=5&extratags=1&lat=${userLatitude}&lon=${userLongitude}&radius=${radius}`;
 
-    logMessage(`🌍 API Request URL: ${url}`);
+    logMessage(`🌍 API Request URL: <br> <a href="${url}" target="_blank">${url}</a>`);
 
     fetch(url)
-    .then(response => response.json())
+    .then(response => {
+        logMessage("✅ API request sent. Waiting for response...");
+        return response.json();
+    })
     .then(data => {
         logMessage("✅ Received response from OpenStreetMap API.");
         resultsList.innerHTML = "";
         if (data.length > 0) {
+            logMessage(`✅ Found ${data.length} places.`);
             data.forEach(place => {  
                 let listItem = document.createElement("li");
                 listItem.textContent = `${place.display_name}`;
