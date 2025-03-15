@@ -1,5 +1,36 @@
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('Service Worker Registered'));
+}
+
+let userLatitude, userLongitude;
+
+function getLocation() {
+    const status = document.getElementById("status");
+    status.textContent = "Locating…";
+
+    if (!navigator.geolocation) {
+        status.textContent = "Geolocation is not supported by your browser.";
+    } else {
+        navigator.geolocation.getCurrentPosition(success, error);
+    }
+}
+
+function success(position) {
+    userLatitude  = position.coords.latitude;
+    userLongitude = position.coords.longitude;
+    
+    document.getElementById("status").textContent = "Location found. Select your preferences.";
+    document.getElementById("preferences").style.display = "block";
+}
+
+function error() {
+    document.getElementById("status").textContent = "Unable to retrieve your location.";
+}
+
+// Fetch the Google API key securely
 async function getGoogleApiKey() {
-    const response = await fetch('/google-key');
+    const response = await fetch('/google-key'); // This assumes you have a server-side endpoint
     const data = await response.json();
     return data.GOOGLE_API_KEY;
 }
