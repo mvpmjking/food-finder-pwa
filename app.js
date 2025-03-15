@@ -65,7 +65,7 @@ async function searchRestaurants() {
         logMessage("Received response from Google API.");
         resultsList.innerHTML = "";
         if (data.results && data.results.length > 0) {
-            data.results.slice(0, 5).forEach(place => {
+            data.results.slice(0, 5).forEach(place => {  // Limit to top 5 results
                 let listItem = document.createElement("li");
                 listItem.textContent = `${place.name} - Rating: ${place.rating}`;
                 resultsList.appendChild(listItem);
