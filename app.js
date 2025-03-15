@@ -5,6 +5,17 @@ if ('serviceWorker' in navigator) {
 
 let userLatitude, userLongitude;
 
+// Fetch API Key from Server
+async function getApiKey() {
+    return fetch('/secrets')
+        .then(response => response.json())
+        .then(data => data.FOURSQUARE_API_KEY)
+        .catch(error => {
+            console.error("❌ Error fetching API Key:", error);
+            return null;
+        });
+}
+
 function logMessage(message) {
     const logArea = document.getElementById("debug-log");
     if (logArea) {
@@ -42,7 +53,7 @@ function error(err) {
     document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
 
-// Overpass Turbo API - Free, No API Key Needed
+// Foursquare Places API - Fetch Nearby Restaurants
 async function searchRestaurants() {
     logMessage("🔍 Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
@@ -55,34 +66,40 @@ async function searchRestaurants() {
         return;
     }
 
+    // Get API Key securely
+    const foursquareApiKey = await getApiKey();
+    if (!foursquareApiKey) {
+        logMessage("❌ API Key could not be retrieved.");
+        resultsList.innerHTML = "❌ API Key error.";
+        return;
+    }
+
     const radius = 5000; // Search within 5km (3 miles)
-    
-    // Overpass Turbo query to find restaurants near the user
-    const overpassQuery = `
-        [out:json];
-        node["amenity"="restaurant"](around:${radius},${userLatitude},${userLongitude});
-        out;
-    `;
+    const url = `https://api.foursquare.com/v3/places/search?query=${foodType}&ll=${userLatitude},${userLongitude}&radius=${radius}&limit=5`;
 
-    const overpassURL = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+    logMessage(`🌍 API Request URL: <br> <a href="${url}" target="_blank">${url}</a>`);
 
-    logMessage(`🌍 API Request URL: <br> <a href="${overpassURL}" target="_blank">${overpassURL}</a>`);
-
-    fetch(overpassURL)
+    fetch(url, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "Authorization": foursquareApiKey
+        }
+    })
     .then(response => {
         logMessage("✅ API request sent. Waiting for response...");
         return response.json();
     })
     .then(data => {
-        logMessage("✅ Received response from Overpass Turbo API.");
+        logMessage("✅ Received response from Foursquare API.");
         resultsList.innerHTML = "";
-        if (data.elements && data.elements.length > 0) {
-            logMessage(`✅ Found ${data.elements.length} places.`);
-            data.elements.forEach(place => {  
+        if (data.results && data.results.length > 0) {
+            logMessage(`✅ Found ${data.results.length} places.`);
+            data.results.forEach(place => {  
                 let listItem = document.createElement("li");
-                listItem.textContent = `${place.tags.name || "Unnamed Restaurant"}`;
+                listItem.textContent = `${place.name} - ${place.location.address}`;
                 resultsList.appendChild(listItem);
-                logMessage(`📍 Found: ${place.tags.name || "Unnamed Restaurant"}`);
+                logMessage(`📍 Found: ${place.name} (${place.location.address})`);
             });
         } else {
             logMessage("❌ No restaurants found near your location.");
