@@ -42,7 +42,7 @@ function error(err) {
     document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
 
-// TomTom Places API - No API Key Required
+// Overpass Turbo API - Free, No API Key Needed
 async function searchRestaurants() {
     logMessage("🔍 Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
@@ -55,26 +55,34 @@ async function searchRestaurants() {
         return;
     }
 
-    const radius = 8000; // Search radius: 5 miles (8000 meters)
-    const url = `https://api.tomtom.com/search/2/categorySearch/${foodType}.json?lat=${userLatitude}&lon=${userLongitude}&radius=${radius}&limit=5`;
+    const radius = 5000; // Search within 5km (3 miles)
+    
+    // Overpass Turbo query to find restaurants near the user
+    const overpassQuery = `
+        [out:json];
+        node["amenity"="restaurant"](around:${radius},${userLatitude},${userLongitude});
+        out;
+    `;
 
-    logMessage(`🌍 API Request URL: <br> <a href="${url}" target="_blank">${url}</a>`);
+    const overpassURL = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
-    fetch(url)
+    logMessage(`🌍 API Request URL: <br> <a href="${overpassURL}" target="_blank">${overpassURL}</a>`);
+
+    fetch(overpassURL)
     .then(response => {
         logMessage("✅ API request sent. Waiting for response...");
         return response.json();
     })
     .then(data => {
-        logMessage("✅ Received response from TomTom API.");
+        logMessage("✅ Received response from Overpass Turbo API.");
         resultsList.innerHTML = "";
-        if (data.results && data.results.length > 0) {
-            logMessage(`✅ Found ${data.results.length} places.`);
-            data.results.forEach(place => {  
+        if (data.elements && data.elements.length > 0) {
+            logMessage(`✅ Found ${data.elements.length} places.`);
+            data.elements.forEach(place => {  
                 let listItem = document.createElement("li");
-                listItem.textContent = `${place.poi.name} - ${place.address.freeformAddress}`;
+                listItem.textContent = `${place.tags.name || "Unnamed Restaurant"}`;
                 resultsList.appendChild(listItem);
-                logMessage(`📍 Found: ${place.poi.name} (${place.address.freeformAddress})`);
+                logMessage(`📍 Found: ${place.tags.name || "Unnamed Restaurant"}`);
             });
         } else {
             logMessage("❌ No restaurants found near your location.");
