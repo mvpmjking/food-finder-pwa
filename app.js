@@ -42,7 +42,7 @@ function error(err) {
     document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
 
-// OpenStreetMap API - Now Filtering Nearby with Lat/Lon as Primary Search
+// TomTom Places API - No API Key Required
 async function searchRestaurants() {
     logMessage("🔍 Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
@@ -55,9 +55,8 @@ async function searchRestaurants() {
         return;
     }
 
-    // Search within a 5-mile radius (8000 meters)
-    const radius = 8000;
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&lat=${userLatitude}&lon=${userLongitude}&radius=${radius}&addressdetails=1&extratags=1&limit=5`;
+    const radius = 8000; // Search radius: 5 miles (8000 meters)
+    const url = `https://api.tomtom.com/search/2/categorySearch/${foodType}.json?lat=${userLatitude}&lon=${userLongitude}&radius=${radius}&limit=5`;
 
     logMessage(`🌍 API Request URL: <br> <a href="${url}" target="_blank">${url}</a>`);
 
@@ -67,15 +66,15 @@ async function searchRestaurants() {
         return response.json();
     })
     .then(data => {
-        logMessage("✅ Received response from OpenStreetMap API.");
+        logMessage("✅ Received response from TomTom API.");
         resultsList.innerHTML = "";
-        if (data.length > 0) {
-            logMessage(`✅ Found ${data.length} places.`);
-            data.forEach(place => {  
+        if (data.results && data.results.length > 0) {
+            logMessage(`✅ Found ${data.results.length} places.`);
+            data.results.forEach(place => {  
                 let listItem = document.createElement("li");
-                listItem.textContent = `${place.display_name}`;
+                listItem.textContent = `${place.poi.name} - ${place.address.freeformAddress}`;
                 resultsList.appendChild(listItem);
-                logMessage(`📍 Found: ${place.display_name}`);
+                logMessage(`📍 Found: ${place.poi.name} (${place.address.freeformAddress})`);
             });
         } else {
             logMessage("❌ No restaurants found near your location.");
