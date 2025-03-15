@@ -34,20 +34,17 @@ function searchRestaurants() {
     const resultsList = document.getElementById("results");
     resultsList.innerHTML = "Searching for restaurants...";
 
-    const url = `https://api.yelp.com/v3/businesses/search?term=${foodType}&latitude=${userLatitude}&longitude=${userLongitude}&radius=8047&price=${price}&categories=restaurants&limit=5`;
+    const googleApiKey = "AIzaSyAB-y19t010bAMA_R1vaxmlhuaO-74fKNg";
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLatitude},${userLongitude}&radius=8047&type=restaurant&keyword=${foodType}&minprice=${price}&key=${googleApiKey}`;
 
-    fetch(url, {
-        headers: {
-            'Authorization': 'Bearer YOUR_YELP_API_KEY' // Replace with your API key
-        }
-    })
+    fetch(url)
     .then(response => response.json())
     .then(data => {
         resultsList.innerHTML = "";
-        if (data.businesses && data.businesses.length > 0) {
-            data.businesses.forEach(business => {
+        if (data.results && data.results.length > 0) {
+            data.results.forEach(place => {
                 let listItem = document.createElement("li");
-                listItem.textContent = `${business.name} - ${business.location.address1}, ${business.rating} stars`;
+                listItem.textContent = `${place.name} - Rating: ${place.rating}`;
                 resultsList.appendChild(listItem);
             });
         } else {
