@@ -40,9 +40,9 @@ function error(err) {
     document.getElementById("status").textContent = "Unable to retrieve your location.";
 }
 
-// OpenStreetMap (Nominatim) API - No API Key Required
+// OpenStreetMap (Nominatim) API - Now Filtering by Location
 async function searchRestaurants() {
-    logMessage("Searching for restaurants...");
+    logMessage("Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
     const resultsList = document.getElementById("results");
     resultsList.innerHTML = "Searching for restaurants...";
@@ -53,7 +53,13 @@ async function searchRestaurants() {
         return;
     }
 
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&lat=${userLatitude}&lon=${userLongitude}&radius=5000&limit=5`;
+    // Define a search area (bounding box) around the user's location
+    const latMin = userLatitude - 0.05;
+    const latMax = userLatitude + 0.05;
+    const lonMin = userLongitude - 0.05;
+    const lonMax = userLongitude + 0.05;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&bounded=1&viewbox=${lonMin},${latMin},${lonMax},${latMax}&limit=5`;
 
     logMessage(`API Request URL: ${url}`);
 
@@ -70,8 +76,8 @@ async function searchRestaurants() {
                 logMessage(`Found: ${place.display_name}`);
             });
         } else {
-            logMessage("No restaurants found matching your criteria.");
-            resultsList.innerHTML = "No restaurants found matching your criteria.";
+            logMessage("No restaurants found near your location.");
+            resultsList.innerHTML = "No restaurants found near your location.";
         }
     })
     .catch(error => {
