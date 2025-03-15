@@ -1,40 +1,16 @@
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log('Service Worker Registered'));
+async function getGoogleApiKey() {
+    const response = await fetch('/google-key');
+    const data = await response.json();
+    return data.GOOGLE_API_KEY;
 }
 
-let userLatitude, userLongitude;
-
-function getLocation() {
-    const status = document.getElementById("status");
-    status.textContent = "Locating…";
-
-    if (!navigator.geolocation) {
-        status.textContent = "Geolocation is not supported by your browser.";
-    } else {
-        navigator.geolocation.getCurrentPosition(success, error);
-    }
-}
-
-function success(position) {
-    userLatitude  = position.coords.latitude;
-    userLongitude = position.coords.longitude;
-    
-    document.getElementById("status").textContent = "Location found. Select your preferences.";
-    document.getElementById("preferences").style.display = "block";
-}
-
-function error() {
-    document.getElementById("status").textContent = "Unable to retrieve your location.";
-}
-
-function searchRestaurants() {
+async function searchRestaurants() {
     const price = document.getElementById("price").value;
     const foodType = document.getElementById("food").value;
     const resultsList = document.getElementById("results");
     resultsList.innerHTML = "Searching for restaurants...";
 
-    const googleApiKey = "AIzaSyAB-y19t010bAMA_R1vaxmlhuaO-74fKNg";
+    const googleApiKey = await getGoogleApiKey();
     const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLatitude},${userLongitude}&radius=8047&type=restaurant&keyword=${foodType}&minprice=${price}&key=${googleApiKey}`;
 
     fetch(url)
