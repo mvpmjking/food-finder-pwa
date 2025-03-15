@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Finder PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+</head>
+<body>
+    <h1>Find Nearby Restaurants</h1>
+    <button onclick="getLocation()">Find Food</button>
+    <p id="status"></p>
+    
+    <div id="preferences" style="display:none;">
+        <label for="price">Select Price Range:</label>
+        <select id="price">
+            <option value="1">$</option>
+            <option value="2">$$</option>
+            <option value="3">$$$</option>
+            <option value="4">$$$$</option>
+        </select>
+        
+        <label for="food">What are you craving?</label>
+        <input type="text" id="food" placeholder="e.g., Pizza, Sushi, Burgers">
+
+        <button onclick="searchRestaurants()">Search</button>
+    </div>
+
+    <p id="location"></p>
+    <ul id="results"></ul>
+
+</body>
+</html>
