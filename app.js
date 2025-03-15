@@ -42,7 +42,7 @@ function error(err) {
     document.getElementById("status").innerHTML = "❌ Unable to retrieve your location.";
 }
 
-// OpenStreetMap API - Now Logging Each Step
+// OpenStreetMap API - Now Filtering Nearby
 async function searchRestaurants() {
     logMessage("🔍 Searching for nearby restaurants...");
     const foodType = document.getElementById("food").value;
@@ -55,9 +55,15 @@ async function searchRestaurants() {
         return;
     }
 
-    // Search within a 5-mile radius (8000 meters)
-    const radius = 8000;
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&dedupe=1&limit=5&extratags=1&lat=${userLatitude}&lon=${userLongitude}&radius=${radius}`;
+    // Create a bounding box (5-mile radius)
+    const latOffset = 0.07; // Adjusted range (~5 miles)
+    const lonOffset = 0.07; // Adjusted range (~5 miles)
+    const latMin = userLatitude - latOffset;
+    const latMax = userLatitude + latOffset;
+    const lonMin = userLongitude - lonOffset;
+    const lonMax = userLongitude + lonOffset;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&bounded=1&viewbox=${lonMin},${latMin},${lonMax},${latMax}&limit=5`;
 
     logMessage(`🌍 API Request URL: <br> <a href="${url}" target="_blank">${url}</a>`);
 
