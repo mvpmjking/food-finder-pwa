@@ -40,9 +40,7 @@ function error(err) {
     document.getElementById("status").textContent = "Unable to retrieve your location.";
 }
 
-// Directly use API key for faster performance
-const googleApiKey = "AIzaSyAB-y19t010bAMA_R1vaxmlhuaO-74fKNg";
-
+// OpenStreetMap (Nominatim) API - No API Key Required
 async function searchRestaurants() {
     logMessage("Searching for restaurants...");
     const foodType = document.getElementById("food").value;
@@ -55,21 +53,21 @@ async function searchRestaurants() {
         return;
     }
 
-    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLatitude},${userLongitude}&radius=4828&type=restaurant&keyword=${foodType}&key=${googleApiKey}`;
-    
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${foodType}&lat=${userLatitude}&lon=${userLongitude}&radius=5000&limit=5`;
+
     logMessage(`API Request URL: ${url}`);
 
     fetch(url)
     .then(response => response.json())
     .then(data => {
-        logMessage("Received response from Google API.");
+        logMessage("Received response from OpenStreetMap API.");
         resultsList.innerHTML = "";
-        if (data.results && data.results.length > 0) {
-            data.results.slice(0, 5).forEach(place => {  // Limit to top 5 results
+        if (data.length > 0) {
+            data.forEach(place => {  
                 let listItem = document.createElement("li");
-                listItem.textContent = `${place.name} - Rating: ${place.rating}`;
+                listItem.textContent = `${place.display_name}`;
                 resultsList.appendChild(listItem);
-                logMessage(`Found: ${place.name} (Rating: ${place.rating})`);
+                logMessage(`Found: ${place.display_name}`);
             });
         } else {
             logMessage("No restaurants found matching your criteria.");
